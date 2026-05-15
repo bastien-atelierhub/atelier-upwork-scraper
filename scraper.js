@@ -1,10 +1,5 @@
-import puppeteer from 'puppeteer';
-
-function findChrome() {
-  const path = process.env.PUPPETEER_EXECUTABLE_PATH;
-  if (path) console.log(`[scraper] Chrome: ${path}`);
-  return path || undefined;
-}
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 
 const JOB_SELECTORS = [
   'article[data-test="JobTile"]',
@@ -21,16 +16,10 @@ export class WorkingUpworkScraper_NoCookie {
 
   async init() {
     this.browser = await puppeteer.launch({
-      headless: 'new',
-      executablePath: findChrome(),
-      args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-dev-shm-usage',
-        '--disable-gpu',
-        '--single-process',
-        '--window-size=1280,800',
-      ],
+      args: chromium.args,
+      defaultViewport: chromium.defaultViewport,
+      executablePath: await chromium.executablePath(),
+      headless: chromium.headless,
     });
 
     this.page = await this.browser.newPage();
@@ -39,7 +28,7 @@ export class WorkingUpworkScraper_NoCookie {
       'Accept-Language': 'en-US,en;q=0.9',
     });
     await this.page.setUserAgent(
-      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36'
     );
   }
 
