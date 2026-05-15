@@ -1,18 +1,4 @@
-import { connect } from 'puppeteer-real-browser';
-import { execSync } from 'child_process';
-
-function getChromePath() {
-  const cacheDir = process.env.PUPPETEER_CACHE_DIR;
-  if (cacheDir) {
-    try {
-      const path = execSync(
-        `find ${cacheDir} -name "chrome" -type f 2>/dev/null | head -1`
-      ).toString().trim();
-      if (path) return path;
-    } catch {}
-  }
-  return undefined;
-}
+import puppeteer from 'puppeteer';
 
 const JOB_SELECTORS = [
   'article[data-test="JobTile"]',
@@ -28,30 +14,27 @@ export class WorkingUpworkScraper_NoCookie {
   }
 
   async init() {
-    const chromePath = getChromePath();
-    const { browser, page } = await connect({
-      headless: true,
+    this.browser = await puppeteer.launch({
+      headless: 'new',
+      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
         '--disable-dev-shm-usage',
         '--disable-gpu',
+        '--single-process',
         '--window-size=1280,800',
       ],
-      customConfig: chromePath ? { executablePath: chromePath } : {},
-      turnstile: true,
-      connectOption: {},
-      disableXvfb: false,
-      ignoreAllFlags: false,
     });
 
-    this.browser = browser;
-    this.page    = page;
-
+    this.page = await this.browser.newPage();
     await this.page.setViewport({ width: 1280, height: 800 });
     await this.page.setExtraHTTPHeaders({
       'Accept-Language': 'en-US,en;q=0.9',
     });
+    await this.page.setUserAgent(
+      'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+    );
   }
 
   async navigateToUpwork(url) {
@@ -68,8 +51,8 @@ export class WorkingUpworkScraper_NoCookie {
       const currentUrl = this.page.url();
       const title      = await this.page.title();
 
-      const onUpwork      = currentUrl.includes('upwork.com');
-      const notChallenge  = !currentUrl.includes('challenges') && !title.toLowerCase().includes('just a moment');
+      const onUpwork     = currentUrl.includes('upwork.com');
+      const notChallenge = !currentUrl.includes('challenges') && !title.toLowerCase().includes('just a moment');
 
       if (onUpwork && notChallenge) {
         console.log('[scraper] Cloudflare passé ✓');
@@ -105,7 +88,6 @@ export class WorkingUpworkScraper_NoCookie {
     const jobs = await this.page.$$eval(selector, (elements, max) => {
       return elements.slice(0, max).map(el => {
         const text = s => el.querySelector(s)?.textContent?.trim() ?? '';
-        const attr = (s, a) => el.querySelector(s)?.getAttribute(a) ?? '';
 
         const titleEl = el.querySelector(
           '[data-test="job-tile-title"] a, h2 a, h3 a, .job-title a, a[href*="/jobs/"]'
