@@ -1,13 +1,12 @@
 services:
   - type: web
     name: atelier-upwork-scraper
-    runtime: node
-    buildCommand: ./render-build.sh
-    startCommand: node server.js
+    runtime: docker
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: NODE_ENV
         value: production
       - key: PUPPETEER_SKIP_DOWNLOAD
         value: "true"
-      - key: PUPPETEER_CACHE_DIR
-        value: /opt/render/project/puppeteer
+      - key: PUPPETEER_EXECUTABLE_PATH
+        value: /usr/bin/chromium
