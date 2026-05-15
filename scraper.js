@@ -1,4 +1,17 @@
 import puppeteer from 'puppeteer';
+import { execSync } from 'child_process';
+
+function findChrome() {
+  const cacheDir = process.env.PUPPETEER_CACHE_DIR || '/opt/render/project/puppeteer';
+  try {
+    const path = execSync(`find ${cacheDir} -name "chrome" -type f 2>/dev/null | head -1`).toString().trim();
+    if (path) {
+      console.log(`[scraper] Chrome trouvé: ${path}`);
+      return path;
+    }
+  } catch {}
+  return process.env.PUPPETEER_EXECUTABLE_PATH || undefined;
+}
 
 const JOB_SELECTORS = [
   'article[data-test="JobTile"]',
@@ -16,7 +29,7 @@ export class WorkingUpworkScraper_NoCookie {
   async init() {
     this.browser = await puppeteer.launch({
       headless: 'new',
-      executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+      executablePath: findChrome(),
       args: [
         '--no-sandbox',
         '--disable-setuid-sandbox',
