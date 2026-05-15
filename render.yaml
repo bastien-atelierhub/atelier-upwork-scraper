@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: atelier-upwork-scraper
+    runtime: node
+    buildCommand: ./render-build.sh
+    startCommand: node server.js
+    envVars:
+      - key: PUPPETEER_CACHE_DIR
+        value: /opt/render/project/puppeteer
+      - key: NODE_ENV
+        value: production
+    autoDeploy: true

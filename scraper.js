@@ -1,4 +1,18 @@
 import { connect } from 'puppeteer-real-browser';
+import { execSync } from 'child_process';
+
+function getChromePath() {
+  const cacheDir = process.env.PUPPETEER_CACHE_DIR;
+  if (cacheDir) {
+    try {
+      const path = execSync(
+        `find ${cacheDir} -name "chrome" -type f 2>/dev/null | head -1`
+      ).toString().trim();
+      if (path) return path;
+    } catch {}
+  }
+  return undefined;
+}
 
 const JOB_SELECTORS = [
   'article[data-test="JobTile"]',
@@ -14,6 +28,7 @@ export class WorkingUpworkScraper_NoCookie {
   }
 
   async init() {
+    const chromePath = getChromePath();
     const { browser, page } = await connect({
       headless: true,
       args: [
@@ -23,7 +38,7 @@ export class WorkingUpworkScraper_NoCookie {
         '--disable-gpu',
         '--window-size=1280,800',
       ],
-      customConfig: {},
+      customConfig: chromePath ? { executablePath: chromePath } : {},
       turnstile: true,
       connectOption: {},
       disableXvfb: false,
