@@ -7,7 +7,7 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
+      - key: PUPPETEER_SKIP_DOWNLOAD
+        value: "true"
       - key: PUPPETEER_CACHE_DIR
         value: /opt/render/project/puppeteer
-      - key: PUPPETEER_EXECUTABLE_PATH
-        value: /opt/render/project/puppeteer/chrome/linux-148.0.7778.97/chrome-linux64/chrome
